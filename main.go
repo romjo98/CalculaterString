@@ -14,11 +14,6 @@ func ReadInput() (string, string, interface{}) {
 	input, _ := reader.ReadString('\n') //сохраняем ввод в переменную, до начала новой строки
 	input = strings.TrimSpace(input)    //Удаляем пробелы с начала и конца строки
 
-	// Проверка на кавычки
-	if input[0] != '"' {
-		panic("Ошибка: Первый аргумент должен быть в кавычках.")
-	}
-
 	// Разделяем строку по пробелам, игнорируя пробелы в кавычках
 	parts := []string{}          //объявляем срез который будет хранить разделимые части строки
 	inQuotes := false            //переменная типа булево которая будет определять находится ли символ внутри кавычек или нет
@@ -26,6 +21,7 @@ func ReadInput() (string, string, interface{}) {
 	for _, char := range input { // пробегаемся по каждому символу input
 		if char == '"' { //тут если текущий символ равен "
 			inQuotes = !inQuotes //то значение inQuotes меняется на противоположное
+			currentPart += string(char)
 		} else if char == ' ' && !inQuotes { //иначе если символ равен пробелу и не находится внутри кавычек то выполняем действие
 			if currentPart != "" {
 				parts = append(parts, currentPart) //Если текущая часть не пуста то добавляем в срез parts, а currentPart очищаем
@@ -49,11 +45,21 @@ func ReadInput() (string, string, interface{}) {
 	operator := parts[1]
 	str2 := parts[2]
 
+	// Проверка на кавычки
+	if str1[0] != '"' {
+		panic("Ошибка: Первый аргумент должен быть в кавычках.")
+	}
+
+	// Проверка на кавычки
+	if (operator[0] == '-' || operator[0] == '+') && str2[0] != '"' {
+		panic("Ошибка: Второй аргумент должен быть в кавычках.")
+	}
+
 	// Проверка длины строки в кавычках
-	if len(str1) > 10 {
+	if len(str1) > 12 {
 		panic("Ошибка: Входящая строка в кавычках превышает 10 символов.")
 	}
-	if len(str2) > 10 {
+	if len(str2) > 12 {
 		panic("Ошибка: Входящая строка в кавычках превышает 10 символов.")
 	}
 
@@ -67,12 +73,10 @@ func ReadInput() (string, string, interface{}) {
 		if num >= 1 && num <= 10 {
 			value = num
 		} else {
-			// Число вне диапазона 1-10, обрабатываем как строку
-			value = str2
+			panic("Число должно быть от 1 до 10")
 		}
 	} else {
-		// Если str2 не число, то это строка
-		value = str2
+		value = strings.Trim(str2, "\"")
 	}
 
 	return str1, operator, value
@@ -132,7 +136,7 @@ func Calculate() {
 				if num > len(str1) {
 					panic("Число не может превышать длину строки")
 				}
-				result := str1[:num]
+				result := str1[:len(str1)/num]
 				// Обрезаем результат до 40 символов
 				if len(result) > 40 {
 					result = result[:40] + "..."
